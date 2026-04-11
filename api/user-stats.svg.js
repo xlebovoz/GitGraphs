@@ -16,8 +16,7 @@ export default async function handler(req, res) {
       borderColor: '#58a6ff',
       grid: '#21262d',
       lineStars: '#f1e05a',
-      lineFollowers: '#58a6ff',
-      lineCommits: '#2fbb4f'
+      lineFollowers: '#58a6ff'
     },
     light: {
       type: 'gradient',
@@ -29,8 +28,7 @@ export default async function handler(req, res) {
       borderColor: '#0969da',
       grid: '#e1e4e8',
       lineStars: '#e3b341',
-      lineFollowers: '#0969da',
-      lineCommits: '#1a7f37'
+      lineFollowers: '#0969da'
     }
   };
 
@@ -64,24 +62,50 @@ export default async function handler(req, res) {
   }
   
   try {
+    // Получаем данные пользователя
     const userResponse = await fetch(`https://api.github.com/users/${username}`);
     if (!userResponse.ok) throw new Error(`User "${username}" not found`);
     const userData = await userResponse.json();
     
-    // Получаем реальные данные по годам
-    const yearlyData = await getUserYearlyStatsReal(username);
+    // Получаем звёзды по годам (реальные)
+    const starsByYear = await getUserStarsByYear(username);
+    
+    // Получаем текущее количество подписчиков
+    const currentFollowers = userData.followers;
+    
+    // Формируем данные по годам (последние 8 лет)
+    const currentYear = new Date().getFullYear();
+    const startYear = Math.max(2015, currentYear - 8);
+    const yearlyData = [];
+    
+    let cumulativeStars = 0;
+    
+    for (let year = startYear; year <= currentYear; year++) {
+      cumulativeStars += starsByYear.get(year) || 0;
+      
+      // Подписчики - прямая линия (равномерный рост)
+      const yearIndex = year - startYear;
+      const totalYears = currentYear - startYear;
+      const followersRatio = totalYears > 0 ? yearIndex / totalYears : 1;
+      const followersValue = Math.floor(currentFollowers * followersRatio);
+      
+      yearlyData.push({
+        year: year.toString(),
+        stars: cumulativeStars,
+        followers: followersValue
+      });
+    }
     
     // Находим максимальные значения
     const maxStars = Math.ceil(Math.max(...yearlyData.map(d => d.stars), 1) / 1000) * 1000;
     const maxFollowers = Math.ceil(Math.max(...yearlyData.map(d => d.followers), 1) / 1000) * 1000;
-    const maxCommits = Math.ceil(Math.max(...yearlyData.map(d => d.commits), 1) / 1000) * 1000;
     
     const graphHeight = 180;
     const graphWidth = parseInt(width) - 100;
     const stepX = graphWidth / (yearlyData.length - 1 || 1);
     
     function generatePoints(dataKey) {
-      let maxValue = dataKey === 'stars' ? maxStars : (dataKey === 'followers' ? maxFollowers : maxCommits);
+      let maxValue = dataKey === 'stars' ? maxStars : maxFollowers;
       return yearlyData.map((data, index) => {
         const x = 50 + (index * stepX);
         const y = 60 + graphHeight - (data[dataKey] / maxValue * graphHeight);
@@ -98,7 +122,6 @@ export default async function handler(req, res) {
     // Генерируем шаги для сетки
     const starSteps = generateNiceSteps(maxStars);
     const followerSteps = generateNiceSteps(maxFollowers);
-    const commitSteps = generateNiceSteps(maxCommits);
     
     let background = '';
     if (currentTheme.type === 'gradient') {
@@ -121,6 +144,7 @@ export default async function handler(req, res) {
       <!-- Заголовок с аватаром -->
       <g transform="translate(20, 20)">
         <image x="0" y="0" width="40" height="40" href="${userData.avatar_url}" rx="20" clip-path="url(#circle)"/>
+        <circle cx="20" cy="20" r="20" fill="none" stroke="${currentTheme.borderColor}" stroke-width="2"/>
         <text x="55" y="18" font-family="Arial, sans-serif" font-size="16" fill="${currentTheme.text}" font-weight="600">
           ${userData.name || username}
         </text>
@@ -130,18 +154,15 @@ export default async function handler(req, res) {
       </g>
       
       <!-- Легенда -->
-      <g transform="translate(${parseInt(width) - 200}, 20)">
+      <g transform="translate(${parseInt(width) - 160}, 20)">
         <rect x="0" y="0" width="12" height="12" fill="${currentTheme.lineStars}" rx="2"/>
         <text x="18" y="11" font-family="Arial" font-size="11" fill="${currentTheme.text}">⭐ Stars: ${formatNumber(yearlyData[yearlyData.length-1]?.stars || 0)}</text>
         
         <rect x="0" y="22" width="12" height="12" fill="${currentTheme.lineFollowers}" rx="2"/>
-        <text x="18" y="33" font-family="Arial" font-size="11" fill="${currentTheme.text}">👥 Followers: ${formatNumber(yearlyData[yearlyData.length-1]?.followers || 0)}</text>
-        
-        <rect x="0" y="44" width="12" height="12" fill="${currentTheme.lineCommits}" rx="2"/>
-        <text x="18" y="55" font-family="Arial" font-size="11" fill="${currentTheme.text}">💻 Commits: ${formatNumber(yearlyData[yearlyData.length-1]?.commits || 0)}</text>
+        <text x="18" y="33" font-family="Arial" font-size="11" fill="${currentTheme.text}">👥 Followers: ${formatNumber(currentFollowers)}</text>
       </g>
       
-      <!-- Сетка и линии для звёзд -->
+      <!-- Линия звёзд -->
       <text x="45" y="55" font-family="Arial" font-size="9" fill="${currentTheme.muted}" text-anchor="end">⭐</text>
       ${starSteps.map(value => {
         const y = 60 + graphHeight - (value / maxStars * graphHeight);
@@ -152,24 +173,30 @@ export default async function handler(req, res) {
       }).join('')}
       <polyline points="${generatePoints('stars')}" fill="none" stroke="${currentTheme.lineStars}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
       
-      <!-- Сетка и линии для подписчиков -->
-      <text x="${parseInt(width)/2}" y="55" font-family="Arial" font-size="9" fill="${currentTheme.muted}" text-anchor="middle">👥</text>
+      <!-- Точки на линии звёзд -->
+      ${yearlyData.map((data, index) => {
+        const x = 50 + (index * stepX);
+        const y = 60 + graphHeight - (data.stars / maxStars * graphHeight);
+        return `<circle cx="${x}" cy="${y}" r="3" fill="${currentTheme.lineStars}" stroke="${currentTheme.text}" stroke-width="1.5"/>`;
+      }).join('')}
+      
+      <!-- Линия подписчиков -->
+      <text x="${parseInt(width) - 45}" y="55" font-family="Arial" font-size="9" fill="${currentTheme.muted}" text-anchor="start">👥</text>
       ${followerSteps.map(value => {
         const y = 60 + graphHeight - (value / maxFollowers * graphHeight);
-        return `<line x1="50" y1="${y}" x2="${parseInt(width) - 50}" y2="${y}" stroke="${currentTheme.grid}" stroke-width="1" stroke-dasharray="3"/>`;
-      }).join('')}
-      <polyline points="${generatePoints('followers')}" fill="none" stroke="${currentTheme.lineFollowers}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-      
-      <!-- Сетка и линии для коммитов -->
-      <text x="${parseInt(width) - 45}" y="55" font-family="Arial" font-size="9" fill="${currentTheme.muted}" text-anchor="start">💻</text>
-      ${commitSteps.map(value => {
-        const y = 60 + graphHeight - (value / maxCommits * graphHeight);
         return `
           <line x1="50" y1="${y}" x2="${parseInt(width) - 50}" y2="${y}" stroke="${currentTheme.grid}" stroke-width="1" stroke-dasharray="3"/>
           <text x="${parseInt(width) - 45}" y="${y+3}" font-family="Arial" font-size="8" fill="${currentTheme.muted}" text-anchor="start">${formatNumber(value)}</text>
         `;
       }).join('')}
-      <polyline points="${generatePoints('commits')}" fill="none" stroke="${currentTheme.lineCommits}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <polyline points="${generatePoints('followers')}" fill="none" stroke="${currentTheme.lineFollowers}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6,4"/>
+      
+      <!-- Точки на линии подписчиков -->
+      ${yearlyData.map((data, index) => {
+        const x = 50 + (index * stepX);
+        const y = 60 + graphHeight - (data.followers / maxFollowers * graphHeight);
+        return `<circle cx="${x}" cy="${y}" r="3" fill="${currentTheme.lineFollowers}" stroke="${currentTheme.text}" stroke-width="1.5"/>`;
+      }).join('')}
       
       <!-- Ось X -->
       <line x1="50" y1="${60 + graphHeight}" x2="${parseInt(width) - 50}" y2="${60 + graphHeight}" stroke="${currentTheme.divider}" stroke-width="1.5"/>
@@ -186,8 +213,9 @@ export default async function handler(req, res) {
         ` : '';
       }).join('')}
       
+      <!-- Подвал -->
       <text x="15" y="${parseInt(height) - 10}" font-family="Arial" font-size="9" 
-            fill="${currentTheme.footer}">📊 Накопленные итоги</text>
+            fill="${currentTheme.footer}">📊 Накопленные звёзды | 📈 Прямая линия подписчиков</text>
       
       <text x="${parseInt(width) - 15}" y="${parseInt(height) - 10}" font-family="Arial" font-size="9" 
             fill="${currentTheme.footer}" text-anchor="end">📅 ${new Date().toISOString().slice(0, 10)}</text>
@@ -202,98 +230,22 @@ export default async function handler(req, res) {
   }
 }
 
-// Функция получения реальной статистики по годам
-async function getUserYearlyStatsReal(username) {
-  const currentYear = new Date().getFullYear();
-  const startYear = Math.max(2015, currentYear - 8); // Последние 8 лет или с 2015
-  const yearlyData = [];
+// Функция получения реальных звёзд по годам
+async function getUserStarsByYear(username) {
+  const starsByYear = new Map();
   
-  // 1. Получаем все репозитории пользователя
+  // Получаем все репозитории пользователя
   const reposResponse = await fetch(`https://api.github.com/users/${username}/repos?per_page=100&sort=created`);
   const repos = await reposResponse.json();
   
-  // 2. Считаем звёзды по годам (сумма звёзд репозиториев, созданных в этом году)
-  const starsByYear = new Map();
+  // Считаем звёзды по году создания репозитория
   repos.forEach(repo => {
     const year = new Date(repo.created_at).getFullYear();
-    if (year >= startYear) {
-      starsByYear.set(year, (starsByYear.get(year) || 0) + repo.stargazers_count);
-    }
+    const currentStars = starsByYear.get(year) || 0;
+    starsByYear.set(year, currentStars + repo.stargazers_count);
   });
   
-  // 3. Получаем реальные коммиты через Events API
-  const commitsByYear = new Map();
-  let page = 1;
-  let hasMore = true;
-  
-  // Собираем события пользователя (максимум 10 страниц по 100 событий)
-  while (hasMore && page <= 10) {
-    const eventsResponse = await fetch(`https://api.github.com/users/${username}/events?per_page=100&page=${page}`);
-    const events = await eventsResponse.json();
-    
-    if (!events.length) break;
-    
-    events.forEach(event => {
-      if (event.type === 'PushEvent') {
-        const year = new Date(event.created_at).getFullYear();
-        if (year >= startYear) {
-          const commitCount = event.payload.size || event.payload.commits?.length || 1;
-          commitsByYear.set(year, (commitsByYear.get(year) || 0) + commitCount);
-        }
-      }
-    });
-    
-    const linkHeader = eventsResponse.headers.get('link');
-    hasMore = linkHeader && linkHeader.includes('rel="next"');
-    page++;
-  }
-  
-  // 4. Получаем подписчиков (через историю, если есть)
-  const followersByYear = new Map();
-  
-  // Пытаемся получить историю подписчиков через starred_at (нет прямого API)
-  // Поэтому используем текущее количество и распределяем по годам активности
-  const userResponse = await fetch(`https://api.github.com/users/${username}`);
-  const userData = await userResponse.json();
-  const currentFollowers = userData.followers;
-  
-  // Распределяем подписчиков на основе активности (коммиты + создание репо)
-  let totalActivity = 0;
-  const activityByYear = new Map();
-  
-  for (let year = startYear; year <= currentYear; year++) {
-    const commits = commitsByYear.get(year) || 0;
-    const stars = starsByYear.get(year) || 0;
-    const activity = commits + stars;
-    activityByYear.set(year, activity);
-    totalActivity += activity;
-  }
-  
-  let cumulativeFollowers = 0;
-  for (let year = startYear; year <= currentYear; year++) {
-    const activity = activityByYear.get(year) || 0;
-    const yearFollowers = totalActivity > 0 ? Math.floor(currentFollowers * (activity / totalActivity)) : 0;
-    cumulativeFollowers += yearFollowers;
-    followersByYear.set(year, cumulativeFollowers);
-  }
-  
-  // 5. Формируем результат с накопленными итогами
-  let cumulativeStars = 0;
-  let cumulativeCommits = 0;
-  
-  for (let year = startYear; year <= currentYear; year++) {
-    cumulativeStars += starsByYear.get(year) || 0;
-    cumulativeCommits += commitsByYear.get(year) || 0;
-    
-    yearlyData.push({
-      year: year.toString(),
-      stars: cumulativeStars,
-      followers: followersByYear.get(year) || 0,
-      commits: cumulativeCommits
-    });
-  }
-  
-  return yearlyData;
+  return starsByYear;
 }
 
 function generateNiceSteps(maxValue) {
