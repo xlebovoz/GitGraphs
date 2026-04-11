@@ -67,23 +67,25 @@ export default async function handler(req, res) {
     if (!userResponse.ok) throw new Error(`User "${username}" not found`);
     const userData = await userResponse.json();
     
+    // Получаем год создания аккаунта
+    const createdAt = new Date(userData.created_at);
+    const startYear = createdAt.getFullYear();
+    const currentYear = new Date().getFullYear();
+    
     // Получаем звёзды по годам (реальные)
     const starsByYear = await getUserStarsByYear(username);
     
     // Получаем текущее количество подписчиков
     const currentFollowers = userData.followers;
     
-    // Формируем данные по годам (последние 8 лет)
-    const currentYear = new Date().getFullYear();
-    const startYear = Math.max(2015, currentYear - 8);
+    // Формируем данные по годам (с года создания аккаунта)
     const yearlyData = [];
-    
     let cumulativeStars = 0;
     
     for (let year = startYear; year <= currentYear; year++) {
       cumulativeStars += starsByYear.get(year) || 0;
       
-      // Подписчики - прямая линия (равномерный рост)
+      // Подписчики - прямая линия (равномерный рост от 0 до текущего)
       const yearIndex = year - startYear;
       const totalYears = currentYear - startYear;
       const followersRatio = totalYears > 0 ? yearIndex / totalYears : 1;
@@ -104,11 +106,11 @@ export default async function handler(req, res) {
     const starSteps = generateAdaptiveSteps(maxStars);
     const followerSteps = generateAdaptiveSteps(maxFollowers);
     
-    const graphHeight = 160; // Уменьшил высоту графика
+    const graphHeight = 160;
     const graphWidth = parseInt(width) - 100;
     const stepX = graphWidth / (yearlyData.length - 1 || 1);
     
-    function generatePoints(dataKey, maxValue, stepsData) {
+    function generatePoints(dataKey, maxValue) {
       return yearlyData.map((data, index) => {
         const x = 50 + (index * stepX);
         const y = 60 + graphHeight - (data[dataKey] / maxValue * graphHeight);
@@ -148,7 +150,7 @@ export default async function handler(req, res) {
           ${userData.name || username}
         </text>
         <text x="65" y="30" font-family="Arial, sans-serif" font-size="10" fill="${currentTheme.muted}">
-          @${username}
+          @${username} • с ${startYear} года
         </text>
       </g>
       
@@ -170,7 +172,7 @@ export default async function handler(req, res) {
           <text x="45" y="${y+2}" font-family="Arial" font-size="7" fill="${currentTheme.muted}" text-anchor="end">${formatNumber(value)}</text>
         `;
       }).join('')}
-      <polyline points="${generatePoints('stars', maxStars, starSteps)}" fill="none" stroke="${currentTheme.lineStars}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <polyline points="${generatePoints('stars', maxStars)}" fill="none" stroke="${currentTheme.lineStars}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       
       <!-- Точки на линии звёзд -->
       ${yearlyData.map((data, index) => {
@@ -188,7 +190,7 @@ export default async function handler(req, res) {
           <text x="${parseInt(width) - 45}" y="${y+2}" font-family="Arial" font-size="7" fill="${currentTheme.muted}" text-anchor="start">${formatNumber(value)}</text>
         `;
       }).join('')}
-      <polyline points="${generatePoints('followers', maxFollowers, followerSteps)}" fill="none" stroke="${currentTheme.lineFollowers}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4,3"/>
+      <polyline points="${generatePoints('followers', maxFollowers)}" fill="none" stroke="${currentTheme.lineFollowers}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4,3"/>
       
       <!-- Точки на линии подписчиков -->
       ${yearlyData.map((data, index) => {
@@ -202,7 +204,7 @@ export default async function handler(req, res) {
       
       <!-- Подписи годов -->
       ${yearlyData.map((data, index) => {
-        const show = yearlyData.length <= 10 || index % Math.ceil(yearlyData.length / 8) === 0;
+        const show = yearlyData.length <= 12 || index % Math.ceil(yearlyData.length / 10) === 0;
         const x = 50 + (index * stepX);
         return show ? `
           <text x="${x}" y="${60 + graphHeight + 12}" font-family="Arial" font-size="8" 
@@ -214,7 +216,7 @@ export default async function handler(req, res) {
       
       <!-- Подвал -->
       <text x="15" y="${parseInt(height) - 8}" font-family="Arial" font-size="8" 
-            fill="${currentTheme.footer}">📊 Powered by Xlebovoz</text>
+            fill="${currentTheme.footer}">📊 Накопленные звёзды | 📈 Прямая линия подписчиков</text>
       
       <text x="${parseInt(width) - 15}" y="${parseInt(height) - 8}" font-family="Arial" font-size="8" 
             fill="${currentTheme.footer}" text-anchor="end">📅 ${new Date().toISOString().slice(0, 10)}</text>
