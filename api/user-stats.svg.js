@@ -3,7 +3,7 @@ export default async function handler(req, res) {
   res.setHeader('Content-Type', 'image/svg+xml');
   res.setHeader('Cache-Control', 'public, max-age=21600, s-maxage=21600');
   
-  const { username, theme = 'dark', border, width = '700', height = '400' } = req.query;
+  const { username, theme = 'dark', border, width = '700', height = '350' } = req.query;
   
   const themes = {
     dark: {
@@ -96,16 +96,19 @@ export default async function handler(req, res) {
       });
     }
     
-    // Находим максимальные значения
-    const maxStars = Math.ceil(Math.max(...yearlyData.map(d => d.stars), 1) / 1000) * 1000;
-    const maxFollowers = Math.ceil(Math.max(...yearlyData.map(d => d.followers), 1) / 1000) * 1000;
+    // АДАПТИВНОЕ МАСШТАБИРОВАНИЕ
+    const maxStars = Math.max(...yearlyData.map(d => d.stars), 1);
+    const maxFollowers = Math.max(...yearlyData.map(d => d.followers), 1);
     
-    const graphHeight = 180;
+    // Генерируем красивые шаги для сетки (адаптивные)
+    const starSteps = generateAdaptiveSteps(maxStars);
+    const followerSteps = generateAdaptiveSteps(maxFollowers);
+    
+    const graphHeight = 160; // Уменьшил высоту графика
     const graphWidth = parseInt(width) - 100;
     const stepX = graphWidth / (yearlyData.length - 1 || 1);
     
-    function generatePoints(dataKey) {
-      let maxValue = dataKey === 'stars' ? maxStars : maxFollowers;
+    function generatePoints(dataKey, maxValue, stepsData) {
       return yearlyData.map((data, index) => {
         const x = 50 + (index * stepX);
         const y = 60 + graphHeight - (data[dataKey] / maxValue * graphHeight);
@@ -118,10 +121,6 @@ export default async function handler(req, res) {
       if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
       return num.toString();
     }
-    
-    // Генерируем шаги для сетки
-    const starSteps = generateNiceSteps(maxStars);
-    const followerSteps = generateNiceSteps(maxFollowers);
     
     let background = '';
     if (currentTheme.type === 'gradient') {
@@ -143,70 +142,70 @@ export default async function handler(req, res) {
       
       <!-- Заголовок с аватаром -->
       <g transform="translate(20, 20)">
-        <image x="0" y="0" width="40" height="40" href="${userData.avatar_url}" rx="20" clip-path="url(#circle)"/>
-        <circle cx="20" cy="20" r="20" fill="none" stroke="${currentTheme.borderColor}" stroke-width="2"/>
-        <text x="55" y="18" font-family="Arial, sans-serif" font-size="16" fill="${currentTheme.text}" font-weight="600">
+        <image x="0" y="0" width="35" height="35" href="${userData.avatar_url}" rx="17.5"/>
+        <circle cx="17.5" cy="17.5" r="17.5" fill="none" stroke="${currentTheme.borderColor}" stroke-width="1.5"/>
+        <text x="65" y="16" font-family="Arial, sans-serif" font-size="14" fill="${currentTheme.text}" font-weight="600">
           ${userData.name || username}
         </text>
-        <text x="55" y="35" font-family="Arial, sans-serif" font-size="12" fill="${currentTheme.muted}">
+        <text x="65" y="30" font-family="Arial, sans-serif" font-size="10" fill="${currentTheme.muted}">
           @${username}
         </text>
       </g>
       
       <!-- Легенда -->
-      <g transform="translate(${parseInt(width) - 160}, 20)">
-        <rect x="0" y="0" width="12" height="12" fill="${currentTheme.lineStars}" rx="2"/>
-        <text x="18" y="11" font-family="Arial" font-size="11" fill="${currentTheme.text}">⭐ Stars: ${formatNumber(yearlyData[yearlyData.length-1]?.stars || 0)}</text>
+      <g transform="translate(${parseInt(width) - 150}, 20)">
+        <rect x="0" y="0" width="10" height="10" fill="${currentTheme.lineStars}" rx="2"/>
+        <text x="15" y="9" font-family="Arial" font-size="10" fill="${currentTheme.text}">⭐ ${formatNumber(yearlyData[yearlyData.length-1]?.stars || 0)}</text>
         
-        <rect x="0" y="22" width="12" height="12" fill="${currentTheme.lineFollowers}" rx="2"/>
-        <text x="18" y="33" font-family="Arial" font-size="11" fill="${currentTheme.text}">👥 Followers: ${formatNumber(currentFollowers)}</text>
+        <rect x="0" y="18" width="10" height="10" fill="${currentTheme.lineFollowers}" rx="2"/>
+        <text x="15" y="27" font-family="Arial" font-size="10" fill="${currentTheme.text}">👥 ${formatNumber(currentFollowers)}</text>
       </g>
       
       <!-- Линия звёзд -->
-      <text x="45" y="55" font-family="Arial" font-size="9" fill="${currentTheme.muted}" text-anchor="end">⭐</text>
-      ${starSteps.map(value => {
-        const y = 60 + graphHeight - (value / maxStars * graphHeight);
+      <text x="45" y="52" font-family="Arial" font-size="8" fill="${currentTheme.muted}" text-anchor="end">⭐</text>
+      ${starSteps.map(({ value, yPercent }) => {
+        const y = 60 + graphHeight - (yPercent * graphHeight);
         return `
-          <line x1="50" y1="${y}" x2="${parseInt(width) - 50}" y2="${y}" stroke="${currentTheme.grid}" stroke-width="1" stroke-dasharray="3"/>
-          <text x="45" y="${y+3}" font-family="Arial" font-size="8" fill="${currentTheme.muted}" text-anchor="end">${formatNumber(value)}</text>
+          <line x1="50" y1="${y}" x2="${parseInt(width) - 50}" y2="${y}" stroke="${currentTheme.grid}" stroke-width="0.5" stroke-dasharray="3"/>
+          <text x="45" y="${y+2}" font-family="Arial" font-size="7" fill="${currentTheme.muted}" text-anchor="end">${formatNumber(value)}</text>
         `;
       }).join('')}
-      <polyline points="${generatePoints('stars')}" fill="none" stroke="${currentTheme.lineStars}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <polyline points="${generatePoints('stars', maxStars, starSteps)}" fill="none" stroke="${currentTheme.lineStars}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       
       <!-- Точки на линии звёзд -->
       ${yearlyData.map((data, index) => {
         const x = 50 + (index * stepX);
         const y = 60 + graphHeight - (data.stars / maxStars * graphHeight);
-        return `<circle cx="${x}" cy="${y}" r="3" fill="${currentTheme.lineStars}" stroke="${currentTheme.text}" stroke-width="1.5"/>`;
+        return `<circle cx="${x}" cy="${y}" r="2.5" fill="${currentTheme.lineStars}" stroke="${currentTheme.text}" stroke-width="1"/>`;
       }).join('')}
       
       <!-- Линия подписчиков -->
-      <text x="${parseInt(width) - 45}" y="55" font-family="Arial" font-size="9" fill="${currentTheme.muted}" text-anchor="start">👥</text>
-      ${followerSteps.map(value => {
-        const y = 60 + graphHeight - (value / maxFollowers * graphHeight);
+      <text x="${parseInt(width) - 45}" y="52" font-family="Arial" font-size="8" fill="${currentTheme.muted}" text-anchor="start">👥</text>
+      ${followerSteps.map(({ value, yPercent }) => {
+        const y = 60 + graphHeight - (yPercent * graphHeight);
         return `
-          <line x1="50" y1="${y}" x2="${parseInt(width) - 50}" y2="${y}" stroke="${currentTheme.grid}" stroke-width="1" stroke-dasharray="3"/>
-          <text x="${parseInt(width) - 45}" y="${y+3}" font-family="Arial" font-size="8" fill="${currentTheme.muted}" text-anchor="start">${formatNumber(value)}</text>
+          <line x1="50" y1="${y}" x2="${parseInt(width) - 50}" y2="${y}" stroke="${currentTheme.grid}" stroke-width="0.5" stroke-dasharray="3"/>
+          <text x="${parseInt(width) - 45}" y="${y+2}" font-family="Arial" font-size="7" fill="${currentTheme.muted}" text-anchor="start">${formatNumber(value)}</text>
         `;
       }).join('')}
-      <polyline points="${generatePoints('followers')}" fill="none" stroke="${currentTheme.lineFollowers}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6,4"/>
+      <polyline points="${generatePoints('followers', maxFollowers, followerSteps)}" fill="none" stroke="${currentTheme.lineFollowers}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4,3"/>
       
       <!-- Точки на линии подписчиков -->
       ${yearlyData.map((data, index) => {
         const x = 50 + (index * stepX);
         const y = 60 + graphHeight - (data.followers / maxFollowers * graphHeight);
-        return `<circle cx="${x}" cy="${y}" r="3" fill="${currentTheme.lineFollowers}" stroke="${currentTheme.text}" stroke-width="1.5"/>`;
+        return `<circle cx="${x}" cy="${y}" r="2.5" fill="${currentTheme.lineFollowers}" stroke="${currentTheme.text}" stroke-width="1"/>`;
       }).join('')}
       
       <!-- Ось X -->
-      <line x1="50" y1="${60 + graphHeight}" x2="${parseInt(width) - 50}" y2="${60 + graphHeight}" stroke="${currentTheme.divider}" stroke-width="1.5"/>
+      <line x1="50" y1="${60 + graphHeight}" x2="${parseInt(width) - 50}" y2="${60 + graphHeight}" stroke="${currentTheme.divider}" stroke-width="1"/>
       
       <!-- Подписи годов -->
       ${yearlyData.map((data, index) => {
         const show = yearlyData.length <= 10 || index % Math.ceil(yearlyData.length / 8) === 0;
         const x = 50 + (index * stepX);
         return show ? `
-          <text x="${x}" y="${60 + graphHeight + 15}" font-family="Arial" font-size="9" 
+          <text x="${x}" y="${60 + graphHeight + 12}" font-family="Arial" font-size="8" 
                 fill="${currentTheme.muted}" text-anchor="middle">
             ${data.year}
           </text>
@@ -214,10 +213,10 @@ export default async function handler(req, res) {
       }).join('')}
       
       <!-- Подвал -->
-      <text x="15" y="${parseInt(height) - 10}" font-family="Arial" font-size="9" 
-            fill="${currentTheme.footer}">📊 Накопленные звёзды | 📈 Прямая линия подписчиков</text>
+      <text x="15" y="${parseInt(height) - 8}" font-family="Arial" font-size="8" 
+            fill="${currentTheme.footer}">📊 Powered by Xlebovoz</text>
       
-      <text x="${parseInt(width) - 15}" y="${parseInt(height) - 10}" font-family="Arial" font-size="9" 
+      <text x="${parseInt(width) - 15}" y="${parseInt(height) - 8}" font-family="Arial" font-size="8" 
             fill="${currentTheme.footer}" text-anchor="end">📅 ${new Date().toISOString().slice(0, 10)}</text>
     </svg>
     `;
@@ -248,30 +247,57 @@ async function getUserStarsByYear(username) {
   return starsByYear;
 }
 
-function generateNiceSteps(maxValue) {
-  const step = Math.ceil(maxValue / 4 / 100) * 100;
+// АДАПТИВНЫЕ шаги для сетки
+function generateAdaptiveSteps(maxValue) {
+  if (maxValue === 0) {
+    return [
+      { value: 0, yPercent: 0 },
+      { value: 1, yPercent: 1 }
+    ];
+  }
+  
+  // Определяем шаг в зависимости от величины
+  let step;
+  if (maxValue <= 10) step = 2;
+  else if (maxValue <= 50) step = 10;
+  else if (maxValue <= 100) step = 25;
+  else if (maxValue <= 500) step = 100;
+  else if (maxValue <= 1000) step = 250;
+  else step = Math.ceil(maxValue / 4 / 100) * 100;
+  
   const steps = [];
   for (let i = 0; i <= 4; i++) {
-    steps.push(i * step);
+    let value = i * step;
+    if (value > maxValue && i > 0) break;
+    const yPercent = maxValue > 0 ? value / maxValue : 0;
+    steps.push({ value, yPercent });
   }
+  
+  // Всегда добавляем максимальное значение
+  const lastStep = steps[steps.length - 1];
+  if (lastStep && lastStep.value !== maxValue) {
+    steps.push({ value: maxValue, yPercent: 1 });
+  }
+  
   return steps;
 }
 
 function errorSvg(message, width) {
   const w = parseInt(width) || 700;
+  const h = 350;
   return `
-  <svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="200">
-    <rect x="2" y="2" width="${w-4}" height="196" fill="#f85149" rx="12" opacity="0.9"/>
-    <text x="${w/2}" y="80" font-family="Arial" font-size="16" fill="white" text-anchor="middle" font-weight="600">
+  <svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">
+    <rect x="2" y="2" width="${w-4}" height="${h-4}" fill="#f85149" rx="12" opacity="0.9"/>
+    <text x="${w/2}" y="${h/2 - 20}" font-family="Arial" font-size="14" fill="white" text-anchor="middle" font-weight="600">
       ❌ Ошибка
     </text>
-    <text x="${w/2}" y="110" font-family="Arial" font-size="13" fill="rgba(255,255,255,0.9)" text-anchor="middle">
+    <text x="${w/2}" y="${h/2 + 10}" font-family="Arial" font-size="11" fill="rgba(255,255,255,0.9)" text-anchor="middle">
       ${message}
     </text>
-    <text x="${w/2}" y="140" font-family="Arial" font-size="11" fill="rgba(255,255,255,0.7)" text-anchor="middle">
+    <text x="${w/2}" y="${h/2 + 35}" font-family="Arial" font-size="10" fill="rgba(255,255,255,0.7)" text-anchor="middle">
       Пример: ?username=vercel
     </text>
-    <text x="${w-15}" y="185" font-family="Arial" font-size="10" fill="rgba(255,255,255,0.7)" text-anchor="end">
+    <text x="${w-15}" y="${h-15}" font-family="Arial" font-size="9" fill="rgba(255,255,255,0.7)" text-anchor="end">
       ${new Date().toISOString().slice(0, 10)}
     </text>
   </svg>
