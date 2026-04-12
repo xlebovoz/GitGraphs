@@ -221,9 +221,9 @@ export default async function handler(req, res) {
       
       <!-- ИКОНКИ ВНИЗУ (ДОБАВИТЬ ЭТОТ БЛОК) -->
       ${showFollowers ? `
-      <text x="42" y="${graphTopOffset + graphHeight + 6}" font-family="Arial" font-size="8" fill="${currentTheme.lineFollowers}" text-anchor="end">👥</text>
+      <text x="40" y="${graphTopOffset + graphHeight + 2}" font-family="Arial" font-size="8" fill="${currentTheme.lineFollowers}" text-anchor="end">👥</text>
       ` : ''}
-      <text x="${parseInt(width) - 42}" y="${graphTopOffset + graphHeight + 6}" font-family="Arial" font-size="8" fill="${currentTheme.lineStars}" text-anchor="start">⭐</text>
+      <text x="${parseInt(width) - 40}" y="${graphTopOffset + graphHeight + 2}" font-family="Arial" font-size="8" fill="${currentTheme.lineStars}" text-anchor="start">⭐</text>
       
       <!-- Подвал -->
       <text x="15" y="${parseInt(height) - 8}" font-family="Arial" font-size="7" 
