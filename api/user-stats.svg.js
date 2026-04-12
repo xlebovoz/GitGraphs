@@ -257,6 +257,7 @@ async function getUserStarsByYear(username) {
 }
 
 // АДАПТИВНЫЕ шаги для сетки
+// АДАПТИВНЫЕ шаги для сетки
 function generateAdaptiveSteps(maxValue) {
   if (maxValue === 0) {
     return [
@@ -267,7 +268,8 @@ function generateAdaptiveSteps(maxValue) {
   
   // Определяем шаг в зависимости от величины
   let step;
-  if (maxValue <= 10) step = 2;
+  if (maxValue <= 5) step = 1;      // 1,2,3,4,5
+  else if (maxValue <= 10) step = 2;  // 0,2,4,6,8,10
   else if (maxValue <= 50) step = 10;
   else if (maxValue <= 100) step = 25;
   else if (maxValue <= 500) step = 100;
@@ -275,11 +277,19 @@ function generateAdaptiveSteps(maxValue) {
   else step = Math.ceil(maxValue / 4 / 100) * 100;
   
   const steps = [];
-  for (let i = 0; i <= 4; i++) {
-    let value = i * step;
-    if (value > maxValue && i > 0) break;
-    const yPercent = maxValue > 0 ? value / maxValue : 0;
-    steps.push({ value, yPercent });
+  // Для маленьких значений показываем все числа
+  if (maxValue <= 5) {
+    for (let i = 0; i <= maxValue; i++) {
+      const yPercent = maxValue > 0 ? i / maxValue : 0;
+      steps.push({ value: i, yPercent });
+    }
+  } else {
+    for (let i = 0; i <= 4; i++) {
+      let value = i * step;
+      if (value > maxValue && i > 0) break;
+      const yPercent = maxValue > 0 ? value / maxValue : 0;
+      steps.push({ value, yPercent });
+    }
   }
   
   // Всегда добавляем максимальное значение
