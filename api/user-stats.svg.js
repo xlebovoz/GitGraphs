@@ -107,13 +107,14 @@ export default async function handler(req, res) {
     const followerSteps = generateAdaptiveSteps(maxFollowers);
     
     const graphHeight = 110; // Уменьшил высоту графика
+    const graphTopOffset = 200;
     const graphWidth = parseInt(width) - 100;
     const stepX = graphWidth / (yearlyData.length - 1 || 1);
     
     function generatePoints(dataKey, maxValue) {
       return yearlyData.map((data, index) => {
         const x = 50 + (index * stepX);
-        const y = 80 + graphHeight - (data[dataKey] / maxValue * graphHeight);
+        const y = graphTopOffset + graphHeight - (data[dataKey] / maxValue * graphHeight);
         return `${x},${y}`;
       }).join(' ');
     }
@@ -169,7 +170,7 @@ export default async function handler(req, res) {
       <!-- Линия звёзд -->
       <text x="45" y="45" font-family="Arial" font-size="7" fill="${currentTheme.muted}" text-anchor="end">⭐</text>
       ${starSteps.map(({ value, yPercent }) => {
-        const y = 80 + graphHeight - (yPercent * graphHeight);
+        const y = graphTopOffset + graphHeight - (yPercent * graphHeight);
         return `
           <line x1="50" y1="${y}" x2="${parseInt(width) - 50}" y2="${y}" stroke="${currentTheme.grid}" stroke-width="0.5" stroke-dasharray="3"/>
           <text x="45" y="${y+2}" font-family="Arial" font-size="7" fill="${currentTheme.muted}" text-anchor="end">${formatNumber(value)}</text>
@@ -180,14 +181,14 @@ export default async function handler(req, res) {
       <!-- Точки на линии звёзд -->
       ${yearlyData.map((data, index) => {
         const x = 50 + (index * stepX);
-        const y = 80 + graphHeight - (data.stars / maxStars * graphHeight);
+        const y = graphTopOffset + graphHeight - (data.stars / maxStars * graphHeight);
         return `<circle cx="${x}" cy="${y}" r="2" fill="${currentTheme.lineStars}" stroke="${currentTheme.text}" stroke-width="1"/>`;
       }).join('')}
       
       <!-- Линия подписчиков -->
       <text x="${parseInt(width) - 45}" y="45" font-family="Arial" font-size="7" fill="${currentTheme.muted}" text-anchor="start">👥</text>
       ${followerSteps.map(({ value, yPercent }) => {
-        const y = 80 + graphHeight - (yPercent * graphHeight);
+        const y = graphTopOffset + graphHeight - (yPercent * graphHeight);
         return `
           <line x1="50" y1="${y}" x2="${parseInt(width) - 50}" y2="${y}" stroke="${currentTheme.grid}" stroke-width="0.5" stroke-dasharray="3"/>
           <text x="${parseInt(width) - 45}" y="${y+2}" font-family="Arial" font-size="7" fill="${currentTheme.muted}" text-anchor="start">${formatNumber(value)}</text>
@@ -198,19 +199,19 @@ export default async function handler(req, res) {
       <!-- Точки на линии подписчиков -->
       ${yearlyData.map((data, index) => {
         const x = 50 + (index * stepX);
-        const y = 50 + graphHeight - (data.followers / maxFollowers * graphHeight);
+        const y = graphTopOffset + graphHeight - (data.followers / maxFollowers * graphHeight);
         return `<circle cx="${x}" cy="${y}" r="2" fill="${currentTheme.lineFollowers}" stroke="${currentTheme.text}" stroke-width="1"/>`;
       }).join('')}
       
       <!-- Ось X -->
-      <line x1="50" y1="${80 + graphHeight}" x2="${parseInt(width) - 50}" y2="${50 + graphHeight}" stroke="${currentTheme.divider}" stroke-width="1"/>
+      <line x1="50" y1="${graphTopOffset + graphHeight}" x2="${parseInt(width) - 50}" y2="${graphTopOffset + graphHeight}" stroke="${currentTheme.divider}" stroke-width="1"/>
       
       <!-- Подписи годов -->
       ${yearlyData.map((data, index) => {
         const show = yearlyData.length <= 12 || index % Math.ceil(yearlyData.length / 10) === 0;
         const x = 50 + (index * stepX);
         return show ? `
-          <text x="${x}" y="${80 + graphHeight + 12}" font-family="Arial" font-size="7" 
+          <text x="${x}" y="${graphTopOffset + graphHeight + 12}" font-family="Arial" font-size="7" 
                 fill="${currentTheme.muted}" text-anchor="middle">
             ${data.year}
           </text>
