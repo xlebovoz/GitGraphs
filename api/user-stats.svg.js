@@ -170,18 +170,17 @@ export default async function handler(req, res) {
         ` : ''}
       </g>
 
+      <!-- Линия подписчиков (СЛЕВА) -->
       ${showFollowers ? `
-      <!-- Линия подписчиков -->
-      <text x="${parseInt(width) - 45}" y="45" font-family="Arial" font-size="7" fill="${currentTheme.muted}" text-anchor="start">👥</text>
+      <text x="45" y="45" font-family="Arial" font-size="7" fill="${currentTheme.muted}" text-anchor="end">👥</text>
       ${followerSteps.map(({ value, yPercent }) => {
         const y = graphTopOffset + graphHeight - (yPercent * graphHeight);
         return `
           <line x1="50" y1="${y}" x2="${parseInt(width) - 50}" y2="${y}" stroke="${currentTheme.grid}" stroke-width="0.5" stroke-dasharray="3"/>
-          <text x="${parseInt(width) - 45}" y="${y+2}" font-family="Arial" font-size="7" fill="${currentTheme.muted}" text-anchor="start">${formatNumber(value)}</text>
+          <text x="45" y="${y+2}" font-family="Arial" font-size="7" fill="${currentTheme.muted}" text-anchor="end">${formatNumber(value)}</text>
         `;
       }).join('')}
       <polyline points="${generatePoints('followers', maxFollowers)}" fill="none" stroke="${currentTheme.lineFollowers}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4,3"/>
-
       <!-- Точки на линии подписчиков -->
       ${yearlyData.map((data, index) => {
         const x = 50 + (index * stepX);
@@ -190,17 +189,16 @@ export default async function handler(req, res) {
       }).join('')}
       ` : ''}
       
-      <!-- Линия звёзд -->
-      <text x="45" y="45" font-family="Arial" font-size="7" fill="${currentTheme.muted}" text-anchor="end">⭐</text>
+      <!-- Линия звёзд (СПРАВА) -->
+      <text x="${parseInt(width) - 45}" y="45" font-family="Arial" font-size="7" fill="${currentTheme.muted}" text-anchor="start">⭐</text>
       ${starSteps.map(({ value, yPercent }) => {
         const y = graphTopOffset + graphHeight - (yPercent * graphHeight);
         return `
           <line x1="50" y1="${y}" x2="${parseInt(width) - 50}" y2="${y}" stroke="${currentTheme.grid}" stroke-width="0.5" stroke-dasharray="3"/>
-          <text x="45" y="${y+2}" font-family="Arial" font-size="7" fill="${currentTheme.muted}" text-anchor="end">${formatNumber(value)}</text>
+          <text x="${parseInt(width) - 45}" y="${y+2}" font-family="Arial" font-size="7" fill="${currentTheme.muted}" text-anchor="start">${formatNumber(value)}</text>
         `;
       }).join('')}
       <polyline points="${generatePoints('stars', maxStars)}" fill="none" stroke="${currentTheme.lineStars}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-      
       <!-- Точки на линии звёзд -->
       ${yearlyData.map((data, index) => {
         const x = 50 + (index * stepX);
