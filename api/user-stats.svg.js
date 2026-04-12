@@ -209,7 +209,7 @@ export default async function handler(req, res) {
       <!-- Ось X -->
       <line x1="50" y1="${graphTopOffset + graphHeight}" x2="${parseInt(width) - 50}" y2="${graphTopOffset + graphHeight}" stroke="${currentTheme.divider}" stroke-width="1"/>
       
-      <!-- Подписи годов -->
+            <!-- Подписи годов -->
       ${yearlyData.map((data, index) => {
         const show = yearlyData.length <= 12 || index % Math.ceil(yearlyData.length / 10) === 0;
         const x = 50 + (index * stepX);
@@ -220,6 +220,12 @@ export default async function handler(req, res) {
           </text>
         ` : '';
       }).join('')}
+      
+      <!-- ИКОНКИ ВНИЗУ (ДОБАВИТЬ ЭТОТ БЛОК) -->
+      ${showFollowers ? `
+      <text x="42" y="${graphTopOffset + graphHeight + 12}" font-family="Arial" font-size="8" fill="${currentTheme.lineFollowers}" text-anchor="end">👥</text>
+      ` : ''}
+      <text x="${parseInt(width) - 42}" y="${graphTopOffset + graphHeight + 12}" font-family="Arial" font-size="8" fill="${currentTheme.lineStars}" text-anchor="start">⭐</text>
       
       <!-- Подвал -->
       <text x="15" y="${parseInt(height) - 8}" font-family="Arial" font-size="7" 
