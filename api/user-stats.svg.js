@@ -3,7 +3,7 @@ export default async function handler(req, res) {
   res.setHeader('Content-Type', 'image/svg+xml');
   res.setHeader('Cache-Control', 'public, max-age=21600, s-maxage=21600');
   
-  const { username, theme = 'dark', border, width = '700', height = '250' } = req.query;
+  const { username, theme = 'dark', border, width = '700', height = '220' } = req.query;
   
   const themes = {
     dark: {
@@ -107,7 +107,7 @@ export default async function handler(req, res) {
     const followerSteps = generateAdaptiveSteps(maxFollowers);
     
     const graphHeight = 110; // Уменьшил высоту графика
-    const graphTopOffset = 100;
+    const graphTopOffset = 70;
     const graphWidth = parseInt(width) - 100;
     const stepX = graphWidth / (yearlyData.length - 1 || 1);
     
@@ -290,7 +290,7 @@ function generateAdaptiveSteps(maxValue) {
 
 function errorSvg(message, width) {
   const w = parseInt(width) || 700;
-  const h = 250;
+  const h = 220;
   return `
   <svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">
     <rect x="2" y="2" width="${w-4}" height="${h-4}" fill="#f85149" rx="12" opacity="0.9"/>
