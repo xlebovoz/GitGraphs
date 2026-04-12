@@ -160,37 +160,16 @@ export default async function handler(req, res) {
       </g>
       
       <!-- Легенда -->
-      <g transform="translate(20, 20)">
-        ${showFollowers ? `
-        <rect x="0" y="0" width="10" height="10" fill="${currentTheme.lineFollowers}" rx="2"/>
-        <text x="15" y="9" font-family="Arial" font-size="9" fill="${currentTheme.text}">👥 ${formatNumber(currentFollowers)}</text>
-        
-        <rect x="0" y="18" width="10" height="10" fill="${currentTheme.lineStars}" rx="2"/>
-        <text x="15" y="27" font-family="Arial" font-size="9" fill="${currentTheme.text}">⭐ ${formatNumber(yearlyData[yearlyData.length-1]?.stars || 0)}</text>
-        ` : `
+      <g transform="translate(${parseInt(width) - 140}, 20)">
         <rect x="0" y="0" width="10" height="10" fill="${currentTheme.lineStars}" rx="2"/>
         <text x="15" y="9" font-family="Arial" font-size="9" fill="${currentTheme.text}">⭐ ${formatNumber(yearlyData[yearlyData.length-1]?.stars || 0)}</text>
-        `}
+        
+        ${showFollowers ? `
+        <rect x="0" y="18" width="10" height="10" fill="${currentTheme.lineFollowers}" rx="2"/>
+        <text x="15" y="27" font-family="Arial" font-size="9" fill="${currentTheme.text}">👥 ${formatNumber(currentFollowers)}</text>
+        ` : ''}
       </g>
-      
-      <!-- Линия звёзд -->
-      <text x="45" y="45" font-family="Arial" font-size="7" fill="${currentTheme.muted}" text-anchor="end">⭐</text>
-      ${starSteps.map(({ value, yPercent }) => {
-        const y = graphTopOffset + graphHeight - (yPercent * graphHeight);
-        return `
-          <line x1="50" y1="${y}" x2="${parseInt(width) - 50}" y2="${y}" stroke="${currentTheme.grid}" stroke-width="0.5" stroke-dasharray="3"/>
-          <text x="45" y="${y+2}" font-family="Arial" font-size="7" fill="${currentTheme.muted}" text-anchor="end">${formatNumber(value)}</text>
-        `;
-      }).join('')}
-      <polyline points="${generatePoints('stars', maxStars)}" fill="none" stroke="${currentTheme.lineStars}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-      
-      <!-- Точки на линии звёзд -->
-      ${yearlyData.map((data, index) => {
-        const x = 50 + (index * stepX);
-        const y = graphTopOffset + graphHeight - (data.stars / maxStars * graphHeight);
-        return `<circle cx="${x}" cy="${y}" r="2" fill="${currentTheme.lineStars}" stroke="${currentTheme.text}" stroke-width="1"/>`;
-      }).join('')}
-      
+
       ${showFollowers ? `
       <!-- Линия подписчиков -->
       <text x="${parseInt(width) - 45}" y="45" font-family="Arial" font-size="7" fill="${currentTheme.muted}" text-anchor="start">👥</text>
@@ -210,6 +189,24 @@ export default async function handler(req, res) {
         return `<circle cx="${x}" cy="${y}" r="2" fill="${currentTheme.lineFollowers}" stroke="${currentTheme.text}" stroke-width="1"/>`;
       }).join('')}
       ` : ''}
+      
+      <!-- Линия звёзд -->
+      <text x="45" y="45" font-family="Arial" font-size="7" fill="${currentTheme.muted}" text-anchor="end">⭐</text>
+      ${starSteps.map(({ value, yPercent }) => {
+        const y = graphTopOffset + graphHeight - (yPercent * graphHeight);
+        return `
+          <line x1="50" y1="${y}" x2="${parseInt(width) - 50}" y2="${y}" stroke="${currentTheme.grid}" stroke-width="0.5" stroke-dasharray="3"/>
+          <text x="45" y="${y+2}" font-family="Arial" font-size="7" fill="${currentTheme.muted}" text-anchor="end">${formatNumber(value)}</text>
+        `;
+      }).join('')}
+      <polyline points="${generatePoints('stars', maxStars)}" fill="none" stroke="${currentTheme.lineStars}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      
+      <!-- Точки на линии звёзд -->
+      ${yearlyData.map((data, index) => {
+        const x = 50 + (index * stepX);
+        const y = graphTopOffset + graphHeight - (data.stars / maxStars * graphHeight);
+        return `<circle cx="${x}" cy="${y}" r="2" fill="${currentTheme.lineStars}" stroke="${currentTheme.text}" stroke-width="1"/>`;
+      }).join('')}
       
       <!-- Ось X -->
       <line x1="50" y1="${graphTopOffset + graphHeight}" x2="${parseInt(width) - 50}" y2="${graphTopOffset + graphHeight}" stroke="${currentTheme.divider}" stroke-width="1"/>
