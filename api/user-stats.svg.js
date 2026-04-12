@@ -3,7 +3,7 @@ export default async function handler(req, res) {
   res.setHeader('Content-Type', 'image/svg+xml');
   res.setHeader('Cache-Control', 'public, max-age=21600, s-maxage=21600');
   
-  const { username, theme = 'dark', border, width = '700', height = '250' } = req.query;
+  const { username, theme = 'dark', border, width = '700', height = '350' } = req.query;
   
   const themes = {
     dark: {
@@ -113,7 +113,7 @@ export default async function handler(req, res) {
     function generatePoints(dataKey, maxValue) {
       return yearlyData.map((data, index) => {
         const x = 50 + (index * stepX);
-        const y = 50 + graphHeight - (data[dataKey] / maxValue * graphHeight);
+        const y = 80 + graphHeight - (data[dataKey] / maxValue * graphHeight);
         return `${x},${y}`;
       }).join(' ');
     }
@@ -169,7 +169,7 @@ export default async function handler(req, res) {
       <!-- Линия звёзд -->
       <text x="45" y="45" font-family="Arial" font-size="7" fill="${currentTheme.muted}" text-anchor="end">⭐</text>
       ${starSteps.map(({ value, yPercent }) => {
-        const y = 50 + graphHeight - (yPercent * graphHeight);
+        const y = 80 + graphHeight - (yPercent * graphHeight);
         return `
           <line x1="50" y1="${y}" x2="${parseInt(width) - 50}" y2="${y}" stroke="${currentTheme.grid}" stroke-width="0.5" stroke-dasharray="3"/>
           <text x="45" y="${y+2}" font-family="Arial" font-size="7" fill="${currentTheme.muted}" text-anchor="end">${formatNumber(value)}</text>
@@ -180,14 +180,14 @@ export default async function handler(req, res) {
       <!-- Точки на линии звёзд -->
       ${yearlyData.map((data, index) => {
         const x = 50 + (index * stepX);
-        const y = 50 + graphHeight - (data.stars / maxStars * graphHeight);
+        const y = 80 + graphHeight - (data.stars / maxStars * graphHeight);
         return `<circle cx="${x}" cy="${y}" r="2" fill="${currentTheme.lineStars}" stroke="${currentTheme.text}" stroke-width="1"/>`;
       }).join('')}
       
       <!-- Линия подписчиков -->
       <text x="${parseInt(width) - 45}" y="45" font-family="Arial" font-size="7" fill="${currentTheme.muted}" text-anchor="start">👥</text>
       ${followerSteps.map(({ value, yPercent }) => {
-        const y = 50 + graphHeight - (yPercent * graphHeight);
+        const y = 80 + graphHeight - (yPercent * graphHeight);
         return `
           <line x1="50" y1="${y}" x2="${parseInt(width) - 50}" y2="${y}" stroke="${currentTheme.grid}" stroke-width="0.5" stroke-dasharray="3"/>
           <text x="${parseInt(width) - 45}" y="${y+2}" font-family="Arial" font-size="7" fill="${currentTheme.muted}" text-anchor="start">${formatNumber(value)}</text>
@@ -203,14 +203,14 @@ export default async function handler(req, res) {
       }).join('')}
       
       <!-- Ось X -->
-      <line x1="50" y1="${50 + graphHeight}" x2="${parseInt(width) - 50}" y2="${50 + graphHeight}" stroke="${currentTheme.divider}" stroke-width="1"/>
+      <line x1="50" y1="${80 + graphHeight}" x2="${parseInt(width) - 50}" y2="${50 + graphHeight}" stroke="${currentTheme.divider}" stroke-width="1"/>
       
       <!-- Подписи годов -->
       ${yearlyData.map((data, index) => {
         const show = yearlyData.length <= 12 || index % Math.ceil(yearlyData.length / 10) === 0;
         const x = 50 + (index * stepX);
         return show ? `
-          <text x="${x}" y="${50 + graphHeight + 12}" font-family="Arial" font-size="7" 
+          <text x="${x}" y="${80 + graphHeight + 12}" font-family="Arial" font-size="7" 
                 fill="${currentTheme.muted}" text-anchor="middle">
             ${data.year}
           </text>
@@ -289,7 +289,7 @@ function generateAdaptiveSteps(maxValue) {
 
 function errorSvg(message, width) {
   const w = parseInt(width) || 700;
-  const h = 250;
+  const h = 350;
   return `
   <svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">
     <rect x="2" y="2" width="${w-4}" height="${h-4}" fill="#f85149" rx="12" opacity="0.9"/>
