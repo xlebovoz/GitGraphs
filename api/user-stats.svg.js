@@ -160,14 +160,17 @@ export default async function handler(req, res) {
       </g>
       
       <!-- Легенда -->
-      <g transform="translate(${parseInt(width) - 140}, 20)">
+      <g transform="translate(20, 20)">
+        ${showFollowers ? `
+        <rect x="0" y="0" width="10" height="10" fill="${currentTheme.lineFollowers}" rx="2"/>
+        <text x="15" y="9" font-family="Arial" font-size="9" fill="${currentTheme.text}">👥 ${formatNumber(currentFollowers)}</text>
+        
+        <rect x="0" y="18" width="10" height="10" fill="${currentTheme.lineStars}" rx="2"/>
+        <text x="15" y="27" font-family="Arial" font-size="9" fill="${currentTheme.text}">⭐ ${formatNumber(yearlyData[yearlyData.length-1]?.stars || 0)}</text>
+        ` : `
         <rect x="0" y="0" width="10" height="10" fill="${currentTheme.lineStars}" rx="2"/>
         <text x="15" y="9" font-family="Arial" font-size="9" fill="${currentTheme.text}">⭐ ${formatNumber(yearlyData[yearlyData.length-1]?.stars || 0)}</text>
-        
-        ${showFollowers ? `
-        <rect x="0" y="18" width="10" height="10" fill="${currentTheme.lineFollowers}" rx="2"/>
-        <text x="15" y="27" font-family="Arial" font-size="9" fill="${currentTheme.text}">👥 ${formatNumber(currentFollowers)}</text>
-        ` : ''}
+        `}
       </g>
       
       <!-- Линия звёзд -->
