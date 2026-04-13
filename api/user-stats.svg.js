@@ -154,7 +154,7 @@ export default async function handler(req, res) {
       </g>
 
       <!-- Текст (остался на месте) -->
-      <g transform="translate(15, 20)">
+      <g transform="translate(10, 20)">
         <text x="65" y="16" font-family="Arial, sans-serif" font-size="13" fill="${currentTheme.text}" font-weight="600">
           ${userData.name || username}
         </text>
