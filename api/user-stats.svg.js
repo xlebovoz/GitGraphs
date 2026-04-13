@@ -148,7 +148,7 @@ export default async function handler(req, res) {
       ${background}
       
       <!-- Аватар (сдвинут вправо) -->
-      <g transform="translate(60, 20)">
+      <g transform="translate(30, 20)">
         <image x="0" y="0" width="35" height="35" href="${userData.avatar_url}" clip-path="url(#circleClip)"/>
         <circle cx="17.5" cy="17.5" r="17.5" fill="none" stroke="${currentTheme.borderColor}" stroke-width="1.5"/>
       </g>
