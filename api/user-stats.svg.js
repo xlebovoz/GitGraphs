@@ -160,7 +160,7 @@ export default async function handler(req, res) {
       </g>
       
       <!-- Легенда -->
-      <g transform="translate(${parseInt(width) - 140}, 20)">
+      <g transform="translate(${parseInt(width) - 100}, 20)">
         <rect x="0" y="0" width="10" height="10" fill="${currentTheme.lineStars}" rx="2"/>
         <text x="15" y="9" font-family="Arial" font-size="9" fill="${currentTheme.text}">⭐ ${formatNumber(yearlyData[yearlyData.length-1]?.stars || 0)}</text>
         
@@ -227,7 +227,7 @@ export default async function handler(req, res) {
       
       <!-- Подвал -->
       <text x="15" y="${parseInt(height) - 8}" font-family="Arial" font-size="7" 
-            fill="${currentTheme.footer}">📊 Накопленные звёзды | 📈 Прямая линия подписчиков</text>
+            fill="${currentTheme.footer}">📊 powered by Xlebovoz</text>
       
       <text x="${parseInt(width) - 15}" y="${parseInt(height) - 8}" font-family="Arial" font-size="7" 
             fill="${currentTheme.footer}" text-anchor="end">📅 ${new Date().toISOString().slice(0, 10)}</text>
