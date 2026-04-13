@@ -160,7 +160,7 @@ export default async function handler(req, res) {
       </g>
       
       <!-- Легенда -->
-      <g transform="translate(${parseInt(width) - 100}, 20)">
+      <g transform="translate(${parseInt(width) - 60}, 20)">
         <rect x="0" y="0" width="10" height="10" fill="${currentTheme.lineStars}" rx="2"/>
         <text x="15" y="9" font-family="Arial" font-size="9" fill="${currentTheme.text}">⭐ ${formatNumber(yearlyData[yearlyData.length-1]?.stars || 0)}</text>
         
