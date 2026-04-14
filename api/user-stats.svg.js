@@ -68,36 +68,157 @@ export default async function handler(req, res) {
     if (!userResponse.ok) throw new Error(`User "${username}" not found`);
     const userData = await userResponse.json();
     
-    // Получаем год создания аккаунта
-    const createdAt = new Date(userData.created_at);
-    const startYear = createdAt.getFullYear();
-    const currentYear = new Date().getFullYear();
-    
     // Получаем звёзды по годам (реальные)
     const starsByYear = await getUserStarsByYear(username);
     
     // Получаем текущее количество подписчиков
     const currentFollowers = userData.followers;
     
-    // Формируем данные по годам (с года создания аккаунта)
-    const yearlyData = [];
+    // ========= НОВАЯ ЛОГИКА: АДАПТИВНАЯ ДЕТАЛИЗАЦИЯ =========
+    const createdAt = new Date(userData.created_at);
+    const startDate = new Date(createdAt);
+    const now = new Date();
+    
+    const accountAgeYears = (now - startDate) / (1000 * 60 * 60 * 24 * 365.25);
+    
+    let timePoints = []; // массив объектов { date, year, month, label }
+    
+    if (accountAgeYears < 1) {
+      // Меньше года — по месяцам (все)
+      let current = new Date(startDate);
+      while (current <= now) {
+        timePoints.push({
+          date: new Date(current),
+          year: current.getFullYear(),
+          month: current.getMonth(),
+          label: `${current.getMonth()+1}/${current.getFullYear().toString().slice(-2)}`
+        });
+        current.setMonth(current.getMonth() + 1);
+      }
+    } 
+    else if (accountAgeYears < 2) {
+      // 1-2 года — по кварталам (каждые 3 месяца)
+      let current = new Date(startDate);
+      while (current <= now) {
+        timePoints.push({
+          date: new Date(current),
+          year: current.getFullYear(),
+          month: current.getMonth(),
+          label: `Q${Math.floor(current.getMonth()/3)+1} ${current.getFullYear().toString().slice(-2)}`
+        });
+        current.setMonth(current.getMonth() + 3);
+      }
+    }
+    else if (accountAgeYears < 4) {
+      // 2-4 года — по полугодиям
+      let current = new Date(startDate);
+      while (current <= now) {
+        const half = current.getMonth() < 6 ? 'H1' : 'H2';
+        timePoints.push({
+          date: new Date(current),
+          year: current.getFullYear(),
+          month: current.getMonth(),
+          label: `${half} ${current.getFullYear().toString().slice(-2)}`
+        });
+        current.setMonth(current.getMonth() + 6);
+      }
+    }
+    else {
+      // 4+ лет — по годам
+      let currentYear = startDate.getFullYear();
+      while (currentYear <= now.getFullYear()) {
+        timePoints.push({
+          date: new Date(currentYear, 0, 1),
+          year: currentYear,
+          month: 0,
+          label: currentYear.toString()
+        });
+        currentYear++;
+      }
+    }
+    
+    // Формируем данные по точкам
+    const timelineData = [];
     let cumulativeStars = 0;
     
-    for (let year = startYear; year <= currentYear; year++) {
-      cumulativeStars += starsByYear.get(year) || 0;
+    // Сначала соберём звёзды по месяцам/кварталам из репозиториев
+    const starsByPeriod = new Map(); // ключ: '2024-Q1' или '2024-06' и т.д.
+    
+    // Получаем все репозитории с детальными датами
+    const reposResponseDetailed = await fetch(`https://api.github.com/users/${username}/repos?per_page=100&sort=created`);
+    const reposDetailed = await reposResponseDetailed.json();
+    
+    // Функция для получения ключа периода
+    function getPeriodKey(date, ageYears, startDateRef) {
+      const year = date.getFullYear();
+      if (ageYears < 1) {
+        // по месяцам
+        return `${year}-${date.getMonth()+1}`;
+      } else if (ageYears < 2) {
+        // по кварталам
+        const quarter = Math.floor(date.getMonth() / 3) + 1;
+        return `${year}-Q${quarter}`;
+      } else if (ageYears < 4) {
+        // по полугодиям
+        const half = date.getMonth() < 6 ? 'H1' : 'H2';
+        return `${year}-${half}`;
+      } else {
+        // по годам
+        return `${year}`;
+      }
+    }
+    
+    // Распределяем звёзды по периодам
+    reposDetailed.forEach(repo => {
+      const createdDate = new Date(repo.created_at);
+      const periodKey = getPeriodKey(createdDate, accountAgeYears, startDate);
+      const currentStars = starsByPeriod.get(periodKey) || 0;
+      starsByPeriod.set(periodKey, currentStars + repo.stargazers_count);
+    });
+    
+    // Формируем итоговые данные по точкам времени
+    for (let i = 0; i < timePoints.length; i++) {
+      const point = timePoints[i];
+      const nextPoint = timePoints[i+1];
       
-      // Подписчики - прямая линия (равномерный рост от 0 до текущего)
-      const yearIndex = year - startYear;
-      const totalYears = currentYear - startYear;
-      const followersRatio = totalYears > 0 ? yearIndex / totalYears : 1;
+      // Суммируем звёзды за период от point до следующей точки (или до now)
+      let periodStars = 0;
+      const periodKey = getPeriodKey(point.date, accountAgeYears, startDate);
+      periodStars = starsByPeriod.get(periodKey) || 0;
+      
+      cumulativeStars += periodStars;
+      
+      // Подписчики — линейная интерполяция по времени
+      const totalAge = now - startDate;
+      const pointAge = point.date - startDate;
+      const followersRatio = totalAge > 0 ? Math.min(1, pointAge / totalAge) : 1;
       const followersValue = Math.floor(currentFollowers * followersRatio);
       
-      yearlyData.push({
-        year: year.toString(),
+      timelineData.push({
+        label: point.label,
         stars: cumulativeStars,
-        followers: followersValue
+        followers: followersValue,
+        date: point.date
       });
     }
+    
+    // Убедимся, что последняя точка — сегодня
+    const lastPoint = timelineData[timelineData.length - 1];
+    if (lastPoint && (now - lastPoint.date) > 7 * 24 * 60 * 60 * 1000) {
+      // Если последняя точка старая — добавляем текущую
+      timelineData.push({
+        label: accountAgeYears < 1 ? `${now.getMonth()+1}/${now.getFullYear().toString().slice(-2)}` :
+                accountAgeYears < 2 ? `Q${Math.floor(now.getMonth()/3)+1} ${now.getFullYear().toString().slice(-2)}` :
+                accountAgeYears < 4 ? `${now.getMonth() < 6 ? 'H1' : 'H2'} ${now.getFullYear().toString().slice(-2)}` :
+                now.getFullYear().toString(),
+        stars: cumulativeStars,
+        followers: currentFollowers,
+        date: now
+      });
+    }
+    
+    // Используем timelineData вместо yearlyData дальше по коду
+    const yearlyData = timelineData; // переименовываем для совместимости
     
     // АДАПТИВНОЕ МАСШТАБИРОВАНИЕ
     const maxStars = Math.max(...yearlyData.map(d => d.stars), 1);
