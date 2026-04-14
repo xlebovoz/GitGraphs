@@ -257,7 +257,7 @@ export default async function handler(req, res) {
           ${userData.name || username}
         </text>
         <text x="65" y="30" font-family="Arial, sans-serif" font-size="9" fill="${currentTheme.muted}">
-          @${username} • с ${startDate.getFullYear()} года
+          @${username} • since ${startDate.getFullYear()} year
         </text>
       </g>
       
