@@ -30,6 +30,18 @@ export default async function handler(req, res) {
       grid: '#e1e4e8',
       lineStars: '#e3b341',
       lineFollowers: '#0969da'
+    },
+    github: {
+      type: 'gradient',
+      gradient: ['#0d1117', '#161b22', '#0d1117'],
+      text: '#f0f6fc',
+      muted: '#8b949e',
+      divider: '#30363d',
+      footer: '#6e7681',
+      borderColor: '#238636',
+      grid: '#21262d',
+      lineStars: '#299c40',
+      lineFollowers: '#58a6ff'
     }
   };
 
