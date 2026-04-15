@@ -42,6 +42,7 @@ export default async function handler(req, res) {
     const userResponse = await fetch(`https://api.github.com/users/${username}`);
     if (!userResponse.ok) throw new Error(`User "${username}" not found`);
     const userData = await userResponse.json();
+    const avatarBase64 = await fetchAvatarAsBase64(userData.avatar_url);
     
     // Получаем звёзды по периодам (адаптивно)
     const starsByPeriod = new Map();
@@ -258,8 +259,14 @@ export default async function handler(req, res) {
       
       <!-- Аватар (сдвинут вправо) -->
       <g transform="translate(30, 20)">
-        <image x="0" y="0" width="35" height="35" href="data:image/png;base64,${await getAvatarBase64(userData.avatar_url)}" clip-path="url(#circleClip)"/>
-        <circle cx="17.5" cy="17.5" r="17.5" fill="none" stroke="${currentTheme.borderColor}" stroke-width="1.5"/>
+        ${avatarBase64 ? `
+          <image x="0" y="0" width="35" height="35" href="${avatarBase64}" clip-path="url(#circleClip)"/>
+          <circle cx="17.5" cy="17.5" r="17.5" fill="none" stroke="${currentTheme.borderColor}" stroke-width="1.5"/>
+        ` : `
+          <circle cx="17.5" cy="17.5" r="17.5" fill="${currentTheme.borderColor}" opacity="0.3"/>
+          <text x="17.5" y="24" font-family="Arial" font-size="14" fill="${currentTheme.text}" text-anchor="middle">?</text>
+          <circle cx="17.5" cy="17.5" r="17.5" fill="none" stroke="${currentTheme.borderColor}" stroke-width="1.5"/>
+        `}
       </g>
 
       <!-- Текст (остался на месте) -->
@@ -355,6 +362,30 @@ export default async function handler(req, res) {
   }
 }
 
+async function fetchAvatarAsBase64(avatarUrl) {
+  try {
+    const response = await fetch(avatarUrl);
+    if (!response.ok) {
+      console.warn('Failed to fetch avatar image');
+      return null;
+    }
+    
+    const buffer = await response.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    const base64 = btoa(binary);
+    const contentType = response.headers.get('content-type') || 'image/png';
+    
+    return `data:${contentType};base64,${base64}`;
+  } catch (error) {
+    console.error('Error fetching avatar:', error);
+    return null;
+  }
+}
+
 // АДАПТИВНЫЕ шаги для сетки
 function generateAdaptiveSteps(maxValue) {
   if (maxValue === 0) {
@@ -419,12 +450,4 @@ function errorSvg(message, width) {
     </text>
   </svg>
   `;
-}
-
-async function getAvatarBase64(url) {
-  const response = await fetch(url);
-  const buffer = await response.arrayBuffer();
-  const base64 = Buffer.from(buffer).toString('base64');
-  const contentType = response.headers.get('content-type');
-  return base64;
 }
