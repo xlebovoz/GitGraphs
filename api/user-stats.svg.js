@@ -257,12 +257,19 @@ export default async function handler(req, res) {
     <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
       ${background}
       
-      <!-- Аватар через CSS фон -->
+      <!-- Аватар -->
       <g transform="translate(30, 20)">
-        <foreignObject x="0" y="0" width="35" height="35">
-          <div xmlns="http://www.w3.org/1999/xhtml" style="width:35px;height:35px;border-radius:50%;background-image:url('${avatarBase64 || userData.avatar_url}');background-size:cover;background-position:center;"></div>
-        </foreignObject>
-        <circle cx="17.5" cy="17.5" r="17.5" fill="none" stroke="${currentTheme.borderColor}" stroke-width="1.5"/>
+          ${avatarBase64 ? `
+              <image x="0" y="0" width="35" height="35" href="${avatarBase64}" clip-path="url(#circleClip)"/>
+              <circle cx="17.5" cy="17.5" r="17.5" fill="none" stroke="${currentTheme.borderColor}" stroke-width="1.5"/>
+          ` : `
+              <!-- Если аватар не загрузился, показываем первую букву имени -->
+              <circle cx="17.5" cy="17.5" r="17.5" fill="${currentTheme.borderColor}" opacity="0.2"/>
+              <text x="17.5" y="24" font-family="Arial, sans-serif" font-size="14" fill="${currentTheme.text}" text-anchor="middle" font-weight="bold">
+                  ${(userData.name || username).charAt(0).toUpperCase()}
+              </text>
+              <circle cx="17.5" cy="17.5" r="17.5" fill="none" stroke="${currentTheme.borderColor}" stroke-width="1.5"/>
+          `}
       </g>
 
       <!-- Текст (остался на месте) -->
