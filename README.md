@@ -11,5 +11,3 @@
 </div>
 
 ---
-
-<p align="center"><a href="https://github.com/xlebovoz/Profile-stats"><img src="https://git-graphs.vercel.app/api/user-stats.svg?username=xlebovoz"></a></p>
