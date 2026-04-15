@@ -119,17 +119,20 @@ export default async function handler(req, res) {
       
       let label;
       if (monthsStep === 2) {
-        // Формат: "M3/24" (март 2024)
-        const monthNum = current.getMonth() + 1;
-        label = `${monthNum}/${current.getFullYear().toString().slice(-2)}`;
+        // Формат: "3-4 24" (март-апрель 2024)
+        const startMonth = current.getMonth() + 1;
+        const endMonth = Math.min(startMonth + 1, 12);
+        label = `${startMonth}-${endMonth} ${current.getFullYear().toString().slice(-2)}`;
       } else if (monthsStep === 3) {
-        // Формат: "Q1 24" (квартал)
-        const quarter = Math.floor(current.getMonth() / 3) + 1;
-        label = `Q${quarter} ${current.getFullYear().toString().slice(-2)}`;
+        // Формат: "1-3 24" (январь-март 2024)
+        const startMonth = current.getMonth() + 1;
+        const endMonth = Math.min(startMonth + 2, 12);
+        label = `${startMonth}-${endMonth} ${current.getFullYear().toString().slice(-2)}`;
       } else if (monthsStep === 6) {
-        // Формат: "H1 24" (полугодие)
-        const half = current.getMonth() < 6 ? 'H1' : 'H2';
-        label = `${half} ${current.getFullYear().toString().slice(-2)}`;
+        // Формат: "1-6 24" (январь-июнь 2024)
+        const startMonth = current.getMonth() + 1;
+        const endMonth = Math.min(startMonth + 5, 12);
+        label = `${startMonth}-${endMonth} ${current.getFullYear().toString().slice(-2)}`;
       } else {
         // Формат: "2024" (год)
         label = current.getFullYear().toString();
@@ -188,13 +191,17 @@ export default async function handler(req, res) {
     if (lastPeriod && lastPeriod.end < now) {
       let lastLabel;
       if (monthsStep === 2) {
-        lastLabel = `${now.getMonth()+1}/${now.getFullYear().toString().slice(-2)}`;
+        const startMonth = now.getMonth() + 1;
+        const endMonth = Math.min(startMonth + 1, 12);
+        lastLabel = `${startMonth}-${endMonth} ${now.getFullYear().toString().slice(-2)}`;
       } else if (monthsStep === 3) {
-        const quarter = Math.floor(now.getMonth() / 3) + 1;
-        lastLabel = `Q${quarter} ${now.getFullYear().toString().slice(-2)}`;
+        const startMonth = now.getMonth() + 1;
+        const endMonth = Math.min(startMonth + 2, 12);
+        lastLabel = `${startMonth}-${endMonth} ${now.getFullYear().toString().slice(-2)}`;
       } else if (monthsStep === 6) {
-        const half = now.getMonth() < 6 ? 'H1' : 'H2';
-        lastLabel = `${half} ${now.getFullYear().toString().slice(-2)}`;
+        const startMonth = now.getMonth() + 1;
+        const endMonth = Math.min(startMonth + 5, 12);
+        lastLabel = `${startMonth}-${endMonth} ${now.getFullYear().toString().slice(-2)}`;
       } else {
         lastLabel = now.getFullYear().toString();
       }
