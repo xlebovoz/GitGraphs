@@ -258,7 +258,7 @@ export default async function handler(req, res) {
       
       <!-- Аватар (сдвинут вправо) -->
       <g transform="translate(30, 20)">
-        <image x="0" y="0" width="35" height="35" href="${userData.avatar_url}" clip-path="url(#circleClip)"/>
+        <image x="0" y="0" width="35" height="35" href="data:image/png;base64,${await getAvatarBase64(userData.avatar_url)}" clip-path="url(#circleClip)"/>
         <circle cx="17.5" cy="17.5" r="17.5" fill="none" stroke="${currentTheme.borderColor}" stroke-width="1.5"/>
       </g>
 
@@ -419,4 +419,12 @@ function errorSvg(message, width) {
     </text>
   </svg>
   `;
+}
+
+async function getAvatarBase64(url) {
+  const response = await fetch(url);
+  const buffer = await response.arrayBuffer();
+  const base64 = Buffer.from(buffer).toString('base64');
+  const contentType = response.headers.get('content-type');
+  return base64;
 }
