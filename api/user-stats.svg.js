@@ -257,19 +257,10 @@ export default async function handler(req, res) {
     <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
       ${background}
       
-      <!-- Аватар -->
+      <!-- Аватар через прямую ссылку на avatars.githubusercontent.com -->
       <g transform="translate(30, 20)">
-          ${avatarBase64 ? `
-              <image x="0" y="0" width="35" height="35" href="${avatarBase64}" clip-path="url(#circleClip)"/>
-              <circle cx="17.5" cy="17.5" r="17.5" fill="none" stroke="${currentTheme.borderColor}" stroke-width="1.5"/>
-          ` : `
-              <!-- Если аватар не загрузился, показываем первую букву имени -->
-              <circle cx="17.5" cy="17.5" r="17.5" fill="${currentTheme.borderColor}" opacity="0.2"/>
-              <text x="17.5" y="24" font-family="Arial, sans-serif" font-size="14" fill="${currentTheme.text}" text-anchor="middle" font-weight="bold">
-                  ${(userData.name || username).charAt(0).toUpperCase()}
-              </text>
-              <circle cx="17.5" cy="17.5" r="17.5" fill="none" stroke="${currentTheme.borderColor}" stroke-width="1.5"/>
-          `}
+        <image x="0" y="0" width="35" height="35" href="${userData.avatar_url}" clip-path="url(#circleClip)"/>
+        <circle cx="17.5" cy="17.5" r="17.5" fill="none" stroke="${currentTheme.borderColor}" stroke-width="1.5"/>
       </g>
 
       <!-- Текст (остался на месте) -->
@@ -362,30 +353,6 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error('Error:', error);
     res.send(errorSvg(error.message, width));
-  }
-}
-
-async function fetchAvatarAsBase64(avatarUrl) {
-  try {
-    const response = await fetch(avatarUrl);
-    if (!response.ok) {
-      console.warn('Failed to fetch avatar image');
-      return null;
-    }
-    
-    const buffer = await response.arrayBuffer();
-    const bytes = new Uint8Array(buffer);
-    let binary = '';
-    for (let i = 0; i < bytes.byteLength; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    const base64 = btoa(binary);
-    const contentType = response.headers.get('content-type') || 'image/png';
-    
-    return `data:${contentType};base64,${base64}`;
-  } catch (error) {
-    console.error('Error fetching avatar:', error);
-    return null;
   }
 }
 
