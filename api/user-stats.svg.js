@@ -42,7 +42,6 @@ export default async function handler(req, res) {
     const userResponse = await fetch(`https://api.github.com/users/${username}`);
     if (!userResponse.ok) throw new Error(`User "${username}" not found`);
     const userData = await userResponse.json();
-    const avatarBase64 = await fetchAvatarAsBase64(userData.avatar_url);
     
     // Получаем звёзды по периодам (адаптивно)
     const starsByPeriod = new Map();
