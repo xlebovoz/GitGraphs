@@ -4,7 +4,7 @@ export default async function handler(req, res) {
   res.setHeader('Content-Type', 'image/svg+xml');
   res.setHeader('Cache-Control', 'public, max-age=21600, s-maxage=21600');
   
-  const { username, theme = 'dark', border, width = '700', height = '220', followers } = req.query;
+  const { username, theme = 'dark', border, width = '600', height = '220', followers } = req.query;
   const showFollowers = followers === 'true' || followers === '1' || followers === 'yes';
   
   let currentTheme = themes[theme] || themes.dark;
