@@ -209,7 +209,7 @@ export default async function handler(req, res) {
     let background = '';
     let extraDefs = '';
 
-    if (currentTheme.type === 'image' && currentTheme.backgroundImage) {м
+    if (currentTheme.type === 'image' && currentTheme.backgroundImage) {
       background = `
       <defs>
         <clipPath id="circleClip">
