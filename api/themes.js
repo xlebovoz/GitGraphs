@@ -38,6 +38,7 @@ export const themes = {
   trees: {
     type: 'image',
     backgroundImage: '/imgs/trees.jpg',
+    imagePosition: 'bottom',  // bottom, center, top
     text: '#ffffff',
     muted: '#rgba(255,255,255,0.8)',
     divider: 'rgba(255,255,255,0.4)',

@@ -210,6 +210,18 @@ export default async function handler(req, res) {
     let extraDefs = '';
 
     if (currentTheme.type === 'image' && currentTheme.backgroundImage) {
+      // Определяем позицию изображения (по умолчанию центр)
+      const imagePosition = currentTheme.imagePosition || 'center';
+      
+      let preserveAspectRatio;
+      if (imagePosition === 'top') {
+        preserveAspectRatio = 'xMidYMin slice';    // прижимаем к верху
+      } else if (imagePosition === 'bottom') {
+        preserveAspectRatio = 'xMidYMax slice';    // прижимаем к низу
+      } else {
+        preserveAspectRatio = 'xMidYMid slice';    // по центру (по умолчанию)
+      }
+      
       background = `
       <defs>
         <clipPath id="circleClip">
@@ -220,9 +232,10 @@ export default async function handler(req, res) {
         </clipPath>
       </defs>
       <image x="2" y="2" width="${parseInt(width)-4}" height="${parseInt(height)-4}" 
-            href="${currentTheme.backgroundImage}" preserveAspectRatio="xMidYMin slice" clip-path="url(#roundedClip)"/>
+            href="${currentTheme.backgroundImage}" preserveAspectRatio="${preserveAspectRatio}" clip-path="url(#roundedClip)"/>
       <rect x="2" y="2" width="${parseInt(width)-4}" height="${parseInt(height)-4}" rx="12" 
-            fill="rgba(0,0,0,0.2)" stroke="${borderColor}" stroke-width="${borderWidth * 2}"/>`;
+            fill="rgba(0,0,0,0.4)" stroke="${borderColor}" stroke-width="${borderWidth * 2}"/>`;
+            
     } else if (currentTheme.type === 'gradient') {
       background = `
       <defs>
