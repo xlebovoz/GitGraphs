@@ -34,5 +34,17 @@ export const themes = {
     grid: '#21262d',
     lineStars: '#299c40',
     lineFollowers: '#58a6ff'
-  }
+  },
+  trees: {
+    type: 'image',
+    backgroundImage: '/imgs/trees.jpg',
+    text: '#ffffff',
+    muted: '#rgba(255,255,255,0.8)',
+    divider: 'rgba(255,255,255,0.4)',
+    footer: 'rgba(255,255,255,0.6)',
+    borderColor: '#ffffff',
+    grid: 'rgba(255,255,255,0.25)',
+    lineStars: '#ffd700',
+    lineFollowers: '#00bfff'
+  },
 };

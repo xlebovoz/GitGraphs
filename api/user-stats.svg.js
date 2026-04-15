@@ -12,6 +12,7 @@ export default async function handler(req, res) {
   let borderColor = currentTheme.borderColor || currentTheme.text;
   let borderWidth = 0;
 
+  // make border
   if (border !== undefined) {
     borderWidth = 2;
     const colorMap = {
@@ -206,7 +207,23 @@ export default async function handler(req, res) {
     }
     
     let background = '';
-    if (currentTheme.type === 'gradient') {
+    let extraDefs = '';
+
+    if (currentTheme.type === 'image' && currentTheme.backgroundImage) {м
+      background = `
+      <defs>
+        <clipPath id="circleClip">
+          <circle cx="17.5" cy="17.5" r="17.5"/>
+        </clipPath>
+        <clipPath id="roundedClip">
+          <rect x="2" y="2" width="${parseInt(width)-4}" height="${parseInt(height)-4}" rx="12"/>
+        </clipPath>
+      </defs>
+      <image x="2" y="2" width="${parseInt(width)-4}" height="${parseInt(height)-4}" 
+            href="${currentTheme.backgroundImage}" preserveAspectRatio="cover" clip-path="url(#roundedClip)"/>
+      <rect x="2" y="2" width="${parseInt(width)-4}" height="${parseInt(height)-4}" rx="12" 
+            fill="rgba(0,0,0,0.4)" stroke="${borderColor}" stroke-width="${borderWidth * 2}"/>`;
+    } else if (currentTheme.type === 'gradient') {
       background = `
       <defs>
         <clipPath id="circleClip">
