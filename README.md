@@ -11,3 +11,15 @@
 </div>
 
 ---
+
+
+
+
+## How do I add it to my README?
+
+### Add the following markdown to your README, replacing `YourUsername` with your GitHub username.
+
+
+```md
+![GitHub Stats](https://git-graphs.vercel.app/api/user-stats.svg?username=YourUsername)
+```
