@@ -31,3 +31,31 @@
 ```md
 ![GitHub Stats](https://git-graphs.vercel.app/api/user-stats.svg?username=YourUsername&followers=true)
 ```
+
+### You can add an outline for your chart, the following colors are available now:
+
+| Color | Parameter | HEX |
+|-------|-----------|-----|
+| Red | `red` | `#f85149` |
+| Blue | `blue` | `#58a6ff` |
+| Green | `green` | `#2fbb4f` |
+| Yellow | `yellow` | `#f1e05a` |
+| Purple | `purple` | `#a371f7` |
+| Pink | `pink` | `#f778ba` |
+| Orange | `orange` | `#ff7b72` |
+| White | `white` | `#ffffff` |
+| Black | `black` | `#000000` |
+
+
+```md
+![Stats](https://git-graphs.vercel.app/api/user-stats.svg?username=YourUsername&border=red)
+```
+
+### you can also enter your own color for the outline:
+
+> ⚠️ **important**: You need to add a hex color without # at the beginning!
+
+
+```md
+![Stats](https://git-graphs.vercel.app/api/user-stats.svg?username=YourUsername&border=87a96b)
+```
