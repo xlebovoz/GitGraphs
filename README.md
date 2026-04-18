@@ -1,12 +1,12 @@
 <div align="center">
 
-# 📊 Statistical graph of the GitHub profile
+# 📊 GitHub Profile Statistics Graph
 
 **Elevate your README with real-time GitHub stats.**
 
 [![Powered by Vercel](https://img.shields.io/badge/powered_by-vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com)
 
-*A beautiful and customizable graph that will beautify your profile*
+*A beautiful and customizable graph to enhance your GitHub profile.*
 
 </div>
 
@@ -17,27 +17,25 @@
 
 ---
 
+## How to add it to your README
 
-
-
-## How do I add it to my README?
-
-### Add the following markdown to your README, replacing `YourUsername` with your GitHub username.
-
+Add the following markdown to your README, replacing `YourUsername` with your GitHub username.
 
 ```md
 ![GitHub Stats](https://git-graphs.vercel.app/api/user-stats.svg?username=YourUsername)
 ```
 
-### There are currently 2 chart display options available: stars only and stars with subscribers. Initially, only stars are displayed. If you want to add subscribers, add `&followers=true` in the link
+There are currently 2 display options available: stars only, and stars with followers. By default, only stars are shown. To include followers, add `&followers=true` to the URL.
 
-> ⚠️ **important**: The subscriber values on the graph are demo (test) values and may not correspond to your actual data on GitHub
+> ⚠️ **Important**: The follower values displayed on the graph are demo values and may not reflect your actual GitHub data.
 
 ```md
 ![GitHub Stats](https://git-graphs.vercel.app/api/user-stats.svg?username=YourUsername&followers=true)
 ```
 
-### You can add an outline for your chart, the following colors are available now:
+## Adding a border color
+
+You can add a colored outline to your chart. The following colors are currently available:
 
 | Color | Parameter | HEX |
 |-------|-----------|-----|
@@ -51,15 +49,13 @@
 | White | `white` | `#ffffff` |
 | Black | `black` | `#000000` |
 
-
 ```md
 ![Stats](https://git-graphs.vercel.app/api/user-stats.svg?username=YourUsername&border=red)
 ```
 
-### you can also enter your own color for the outline:
+You can also use a custom hex color for the border:
 
-> ⚠️ **important**: You need to add a hex color without # at the beginning!
-
+> ⚠️ **Important**: Enter the hex value without the `#` symbol.
 
 ```md
 ![Stats](https://git-graphs.vercel.app/api/user-stats.svg?username=YourUsername&border=87a96b)
