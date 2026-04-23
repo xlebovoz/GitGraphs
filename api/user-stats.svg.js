@@ -256,12 +256,6 @@ export default async function handler(req, res) {
     <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
       ${background}
       
-      <!-- Аватар через прямую ссылку на avatars.githubusercontent.com -->
-      <g transform="translate(30, 20)">
-        <image x="0" y="0" width="35" height="35" href="${userData.avatar_url}" clip-path="url(#circleClip)"/>
-        <circle cx="17.5" cy="17.5" r="17.5" fill="none" stroke="${currentTheme.borderColor}" stroke-width="1.5"/>
-      </g>
-
       <!-- Текст (остался на месте) -->
       <g transform="translate(10, 20)">
         <text x="65" y="16" font-family="Arial, sans-serif" font-size="13" fill="${currentTheme.text}" font-weight="600">
