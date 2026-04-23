@@ -25,7 +25,7 @@
 ```md
 ![GitHub Stats](https://git-graphs.vercel.app/api/user-stats.svg?username=YourUsername)
 ```
-Es gibt derzeit 2 Anzeigeoptionen: nur Sterne oder Sterne mit Followern. Standardmäßig werden nur Sterne angezeigt. Um Follower einzuschließen, füge &followers=true zur URL hinzu.
+Es gibt derzeit 2 Anzeigeoptionen: nur Sterne oder Sterne mit Followern. Standardmäßig werden nur Sterne angezeigt. Um Follower einzuschließen, füge &`followers=true` zur URL hinzu.
 
 > ⚠️ **Wichtig**: Die im Graph angezeigten Follower-Werte sind Demo-Werte und entsprechen möglicherweise nicht deinen echten GitHub-Daten.
 
