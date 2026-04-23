@@ -258,10 +258,10 @@ export default async function handler(req, res) {
 
       <!-- Текст (остался на месте) -->
       <g transform="translate(10, 20)">
-        <text x="30" y="16" font-family="Arial, sans-serif" font-size="13" fill="${currentTheme.text}" font-weight="600">
+        <text x="20" y="16" font-family="Arial, sans-serif" font-size="13" fill="${currentTheme.text}" font-weight="600">
           ${userData.name || username}
         </text>
-        <text x="30" y="30" font-family="Arial, sans-serif" font-size="9" fill="${currentTheme.muted}">
+        <text x="20" y="30" font-family="Arial, sans-serif" font-size="9" fill="${currentTheme.muted}">
           @${username} • since ${startDate.getFullYear()} year
         </text>
       </g>
