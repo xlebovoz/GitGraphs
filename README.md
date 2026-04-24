@@ -14,7 +14,7 @@
   <a href="README.md">English</a> |
   <a href="README-langs/README.ru.md">Русский</a> |
   <a href="README-langs/README.de.md">Deutsch</a> |
-  <a href="README.es.md">Español</a>
+  <a href="README-langs/README.es.md">Español</a>
 </p>
 
 ---
